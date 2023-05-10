@@ -1,7 +1,5 @@
-use std::process::exit;
-
-use reedline::{DefaultPrompt, DefaultPromptSegment, Reedline, Signal};
-use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Status {
@@ -15,18 +13,12 @@ pub enum Status {
 pub struct Epic {
     pub name: String,
     pub description: Option<String>,
-    pub stories: Vec<Story>,
+    pub stories: Vec<u64>,
     pub status: Status,
 }
 
 impl Epic {
-    fn new() -> Self {
-        let mut reader = Reedline::create();
-
-        let name = get_name(&reader);
-
-        let description = get_description(&reader);
-
+    fn new(name: String, description: String) -> Self {
         return Epic {
             name,
             description,
@@ -35,8 +27,8 @@ impl Epic {
         };
     }
 
-    fn add_story(&mut self) {
-        let story = Story::new();
+    fn add_story(&mut self, story_id: u64) {
+        stories.push(story_id);
     }
 }
 
@@ -62,6 +54,31 @@ impl Story {
     }
 }
 
+#[derive(Debug, Hash, Serialize, Deserialize)]
 pub struct DBState {
-    last
+    last_item_id: u64,
+    epics: HashMap<u64, Epic>,
+    stories: HashMap<u64, Story>,
+}
+
+impl DBState {
+    fn new() -> Self {
+        return DBState {
+            last_item_id: 0,
+            epics: HashMap::new(),
+            stories: HashMap::new()
+        }
+    }
+
+    fn add_epic(&mut self, epic: Epic) {
+        let new_id = self.last_item_id + 1;
+        self.epics.insert(new_id, epic);
+        self.last_item_id += 1;
+    }
+
+    fn add_story(&mut self, story: Story) {
+        let new_id = self.last_item_id + 1;
+        self.stories.insert(new_id, story);
+        self.last_item_id += 1;
+    } 
 }
